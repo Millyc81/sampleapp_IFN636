@@ -7,7 +7,6 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Load user from token on app start
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -30,7 +29,6 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = (userData) => {
-    // userData should contain: { token, id, name, email }
     if (userData.token) {
       localStorage.setItem('token', userData.token);
     }

@@ -14,10 +14,28 @@ const Login = () => {
     setLoading(true);
     try {
       const response = await axiosInstance.post('/api/auth/login', formData);
-      // response.data should contain { token, id, name, email }
+      console.log('Login response:', response.data);
+      
+      // Check if token exists
+      if (!response.data.token) {
+        console.error('No token in response!');
+        alert('Login failed: No token received');
+        return;
+      }
+      
+      // Save token to localStorage
+      localStorage.setItem('token', response.data.token);
+      console.log('✅ Token saved to localStorage');
+      console.log('Token:', response.data.token.substring(0, 30) + '...');
+      
+      // Call login function from context
       login(response.data);
+      
+      // Navigate to dashboard
       navigate('/dashboard');
     } catch (error) {
+      console.error('Login error:', error);
+      console.error('Error response:', error.response?.data);
       alert(error.response?.data?.message || 'Login failed. Please try again.');
     } finally {
       setLoading(false);
