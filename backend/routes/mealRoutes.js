@@ -2,15 +2,19 @@ const express = require('express');
 const router = express.Router();
 const { protect } = require('../middleware/authMiddleware');
 const {
-    getMealsByDate,
     addFoodToMeal,
-    removeFoodFromMeal,
-    getDailySummary
+    getMealsByDate,
+    getDailySummary,
+    removeFoodFromMeal
 } = require('../controllers/mealController');
 
-router.get('/', protect, getMealsByDate);
-router.get('/summary', protect, getDailySummary);
-router.post('/', protect, addFoodToMeal);
-router.delete('/:mealId/items/:itemId', protect, removeFoodFromMeal);
+// All routes require authentication
+router.use(protect);
+
+// Routes
+router.post('/', addFoodToMeal);
+router.get('/', getMealsByDate);
+router.get('/summary', getDailySummary);
+router.delete('/:mealId/items/:itemId', removeFoodFromMeal);
 
 module.exports = router;

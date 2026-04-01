@@ -9,7 +9,8 @@ const mealEntrySchema = new mongoose.Schema({
     quantity: {
         type: Number,
         required: true,
-        min: 0.1
+        min: 0.1,
+        default: 100
     },
     servingUnit: {
         type: String,
@@ -41,12 +42,8 @@ const mealSchema = new mongoose.Schema({
     notes: {
         type: String,
         maxlength: 500
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now
     }
-});
+}, { timestamps: true });
 
 // Index for efficient queries
 mealSchema.index({ userId: 1, date: 1 });

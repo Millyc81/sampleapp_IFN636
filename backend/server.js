@@ -27,9 +27,13 @@ app.use((req, res, next) => {
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/foods', require('./routes/foodRoutes'));
+app.use('/api/meals', require('./routes/mealRoutes'));
 
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`JWT_SECRET set: ${!!process.env.JWT_SECRET}`);
+    console.log(`Server running on port ${PORT}`);
+    console.log('Routes:');
+    console.log('  /api/auth');
+    console.log('  /api/foods');
+    console.log('  /api/meals');
 });
