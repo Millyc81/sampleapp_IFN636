@@ -37,6 +37,7 @@ jobs:
       - name: Build frontend
         run: |
           cd frontend
+          chmod +x node_modules/.bin/react-scripts
           npm run build
 
       - name: Deploy to EC2
