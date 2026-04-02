@@ -69,7 +69,9 @@ jobs:
             echo "📦 Building frontend..."
             cd ../frontend
             npm install
-            npm run build
+            
+            # Fix permission for react-scripts
+            chmod +x node_modules/.bin/react-scripts
             
             # Copy build files to nginx directory
             echo "📁 Copying frontend files..."
