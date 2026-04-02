@@ -55,25 +55,17 @@ jobs:
             echo "📦 Pulling latest code..."
             git pull origin ${{ github.ref_name }}
             
-            # Install backend dependencies
+            # Install backend dependencies and restart
             echo "📦 Installing backend dependencies..."
             cd backend
             npm install
-            
-            # Restart backend with PM2
             echo "🔄 Restarting backend server..."
             pm2 restart diet-tracker-backend || pm2 start server.js --name diet-tracker-backend
             pm2 save
             
-            # Install frontend dependencies and build
-            echo "📦 Building frontend..."
-            cd ../frontend
-            npm install
-            chmod -R +x node_modules/.bin/
-            npm run build
-            
-            # Copy build files to nginx directory
+            # Copy frontend build files (already built in GitHub Actions)
             echo "📁 Copying frontend files..."
+            cd ../frontend
             sudo rm -rf /var/www/html/*
             sudo cp -r build/* /var/www/html/
             
