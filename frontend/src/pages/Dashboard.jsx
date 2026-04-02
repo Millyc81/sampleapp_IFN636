@@ -11,7 +11,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchDailySummary();
-  }, [selectedDate]);
+  }, [selectedDate, fetchDailySummary]);
 
   const fetchDailySummary = async () => {
     setLoading(true);
