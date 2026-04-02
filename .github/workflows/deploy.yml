@@ -1,0 +1,86 @@
+name: Deploy Diet Tracking App to EC2
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          npm install
+
+      - name: Test backend (if you have tests)
+        run: |
+          cd backend
+          npm test || echo "No tests found, skipping"
+
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm install
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm run build
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            echo "🚀 Starting deployment..."
+            
+            # Navigate to project directory
+            cd /home/ubuntu/diet-tracker-app || exit 1
+            
+            # Pull latest code
+            echo "📦 Pulling latest code..."
+            git pull origin ${{ github.ref_name }}
+            
+            # Install backend dependencies
+            echo "📦 Installing backend dependencies..."
+            cd backend
+            npm install
+            
+            # Restart backend with PM2
+            echo "🔄 Restarting backend server..."
+            pm2 restart diet-tracker-backend || pm2 start server.js --name diet-tracker-backend
+            pm2 save
+            
+            # Install frontend dependencies and build
+            echo "📦 Building frontend..."
+            cd ../frontend
+            npm install
+            npm run build
+            
+            # Copy build files to nginx directory
+            echo "📁 Copying frontend files..."
+            sudo rm -rf /var/www/html/*
+            sudo cp -r build/* /var/www/html/
+            
+            # Set correct permissions
+            sudo chown -R www-data:www-data /var/www/html
+            
+            # Restart nginx
+            echo "🔄 Restarting nginx..."
+            sudo systemctl restart nginx
+            
+            echo "✅ Deployment complete!"
