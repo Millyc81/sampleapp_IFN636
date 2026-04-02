@@ -7,8 +7,19 @@ on:
       - Development
 
 jobs:
-  deploy:
+  test-and-deploy:
     runs-on: ubuntu-latest
+    
+    services:
+      mongodb:
+        image: mongo:6.0
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ping: 1})'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     
     steps:
       - name: Checkout code
@@ -24,10 +35,14 @@ jobs:
           cd backend
           npm install
 
-      - name: Test backend (if you have tests)
+      - name: Run Backend Tests
         run: |
           cd backend
-          npm test || echo "No tests found, skipping"
+          npm test
+        env:
+          JWT_SECRET: test-secret-key-for-github-actions
+          MONGO_URI: mongodb://localhost:27017/diet-tracker-test
+          NODE_ENV: test
 
       - name: Install frontend dependencies
         run: |
@@ -37,9 +52,7 @@ jobs:
       - name: Build frontend
         run: |
           cd frontend
-          export CI=false
-          chmod +x node_modules/.bin/react-scripts
-          npm run build
+          CI=false npm run build
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v0.1.5
@@ -48,40 +61,16 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            set -e
             echo "🚀 Starting deployment..."
-            
-            echo "Current directory: $(pwd)"
-            echo "Listing home:"
-            ls -la /home/ubuntu/
-            
             cd /home/ubuntu/diet-tracker-app || exit 1
-            echo "✅ In project directory"
-            
-            echo "📦 Pulling latest code..."
             git pull origin ${{ github.ref_name }}
-            
-            echo "📦 Installing backend dependencies..."
             cd backend
             npm install
-            echo "🔄 Restarting backend server..."
             pm2 restart diet-tracker-backend || pm2 start server.js --name diet-tracker-backend
             pm2 save
-            
-            echo "📁 Copying frontend files..."
             cd ../frontend
-            
-            if [ ! -d "build" ]; then
-              echo "❌ Build folder not found!"
-              ls -la
-              exit 1
-            fi
-            
             sudo rm -rf /var/www/html/*
             sudo cp -r build/* /var/www/html/
             sudo chown -R www-data:www-data /var/www/html
-            
-            echo "🔄 Restarting nginx..."
             sudo systemctl restart nginx
-            
             echo "✅ Deployment complete!"
