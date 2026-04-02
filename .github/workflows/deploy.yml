@@ -52,7 +52,7 @@ jobs:
       - name: Build frontend
         run: |
           cd frontend
-          CI=false npm run build
+          npx react-scripts build
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v0.1.5
