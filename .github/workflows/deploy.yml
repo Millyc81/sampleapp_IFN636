@@ -37,26 +37,34 @@ jobs:
       - name: Build frontend
         run: |
           cd frontend
+          export CI=false
           chmod +x node_modules/.bin/react-scripts
           npm run build
 
-      - name: Deploy to EC2
+            - name: Deploy to EC2
         uses: appleboy/ssh-action@v0.1.5
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            set -e  # Stop on any error
             echo "🚀 Starting deployment..."
+            
+            # Debug: Show current directory
+            echo "Current directory: $(pwd)"
+            echo "Listing home:"
+            ls -la /home/ubuntu/
             
             # Navigate to project directory
             cd /home/ubuntu/diet-tracker-app || exit 1
+            echo "✅ In project directory"
             
             # Pull latest code
             echo "📦 Pulling latest code..."
             git pull origin ${{ github.ref_name }}
             
-            # Install backend dependencies and restart
+            # Backend
             echo "📦 Installing backend dependencies..."
             cd backend
             npm install
@@ -64,13 +72,19 @@ jobs:
             pm2 restart diet-tracker-backend || pm2 start server.js --name diet-tracker-backend
             pm2 save
             
-            # Copy frontend build files (already built in GitHub Actions)
+            # Frontend - just copy built files
             echo "📁 Copying frontend files..."
             cd ../frontend
+            
+            # Check if build folder exists
+            if [ ! -d "build" ]; then
+              echo "❌ Build folder not found! Build may have failed."
+              ls -la
+              exit 1
+            fi
+            
             sudo rm -rf /var/www/html/*
             sudo cp -r build/* /var/www/html/
-            
-            # Set correct permissions
             sudo chown -R www-data:www-data /var/www/html
             
             # Restart nginx
