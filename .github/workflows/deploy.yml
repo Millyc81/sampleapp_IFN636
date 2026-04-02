@@ -69,7 +69,8 @@ jobs:
             echo "📦 Building frontend..."
             cd ../frontend
             npm install
-            sudo npm run build
+            chmod -R +x node_modules/.bin/
+            npm run build
             
             # Copy build files to nginx directory
             echo "📁 Copying frontend files..."
