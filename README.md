@@ -10,7 +10,6 @@ A full-stack web application for tracking daily food intake, monitoring nutritio
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Running the Application](#running-the-application)
-- [License](#license)
 
 ## ✨ Features
 
