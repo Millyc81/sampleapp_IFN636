@@ -69,7 +69,7 @@ jobs:
             echo "📦 Building frontend..."
             cd ../frontend
             npm install
-            npx react-scripts build
+            sudo npm run build
             
             # Copy build files to nginx directory
             echo "📁 Copying frontend files..."
