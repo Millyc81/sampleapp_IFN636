@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axiosInstance from '../axiosConfig';
@@ -9,11 +9,8 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
 
-  useEffect(() => {
-    fetchDailySummary();
-  }, [selectedDate, fetchDailySummary]);
-
-  const fetchDailySummary = async () => {
+  // Wrap fetchDailySummary in useCallback
+  const fetchDailySummary = useCallback(async () => {
     setLoading(true);
     try {
       const response = await axiosInstance.get(`/api/meals/summary?date=${selectedDate}`);
@@ -23,7 +20,11 @@ const Dashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedDate]);
+
+  useEffect(() => {
+    fetchDailySummary();
+  }, [fetchDailySummary]);
 
   const totalCalories = summary?.totalCalories || 0;
   const calorieTarget = 2000;
